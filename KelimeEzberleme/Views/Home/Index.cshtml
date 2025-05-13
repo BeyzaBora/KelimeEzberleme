@@ -1,0 +1,68 @@
+﻿@{
+    ViewData["Title"] = "YeBeCe English";
+    Layout = null; // Tam sayfa tasarım için
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>YeBeCe English</title>
+    <style>
+        body {
+            background-color: #FFE7AE;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        h1 {
+            color: #34b3f1;
+        }
+
+        .start-button {
+            margin-top: 20px;
+            background-color: orange;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+            .start-button:hover {
+                background-color: #e69900;
+            }
+
+        .link-button {
+            margin-top: 10px;
+            display: inline-block;
+            text-decoration: none;
+            color: gray;
+        }
+
+        img {
+            width: 200px;
+        }
+
+        footer {
+            margin-top: 80px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 YeBeCe English</h1>
+    <img src="~/images/robot.jpg" alt="Robot" />
+    <p>Learn English With YeBeCe!</p>
+    <a href="/Account/Register" class="start-button">Başla</a>
+    <br />
+    <a href="/Account/Login" class="link-button">ZATEN HESABIM VAR</a>
+
+    <footer>
+        © 2025 KelimeEzberleme | Proje
+    </footer>
+</body>
+</html>

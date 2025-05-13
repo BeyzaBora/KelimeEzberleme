@@ -1,0 +1,71 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>Dashboard</title>
+    <style>
+        body {
+            background: url('/images/arkaplan.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif;
+            padding-top: 50px;
+            text-align: center;
+        }
+
+        .panel {
+            background-color: rgba(255,255,255,0.85);
+            width: 400px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: #ff6600;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            background-color: orange;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+            .btn:hover {
+                background-color: darkorange;
+            }
+
+        .logout {
+            margin-top: 20px;
+            background-color: crimson;
+        }
+
+            .logout:hover {
+                background-color: darkred;
+            }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h2>Hoş Geldin, @ViewBag.UserName</h2>
+
+        <a href="/Word/List" class="btn">📚 Kelime Listesi</a>
+        <a href="/Quiz/Quiz" class="btn">🧪 Quiz Modülü</a>
+        <a href="/User/Ayarlar" class="btn">⚙️ Kullanıcı Ayarları</a>
+        <a href="/Word/Add" class="btn">➕ Yeni Kelime Ekle</a>
+        <a href="/Rapor/Index" class="btn">📊 Başarı Raporu</a>
+        <a href="/Account/Logout" class="btn logout">🚪
+</body>
+</html>

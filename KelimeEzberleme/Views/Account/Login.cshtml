@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>Giriş Yap</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('/images/arkaplan.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .login-container {
+            width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            text-align: center;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.4);
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            color: #000;
+            font-size: 14px;
+        }
+
+        .login-btn {
+            width: 100%;
+            background-color: orange;
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+            .login-btn:hover {
+                background-color: darkorange;
+            }
+
+        a {
+            display: block;
+            margin-top: 15px;
+            font-size: 13px;
+            color: white;
+        }
+
+        .login-links {
+            margin-top: 15px;
+            font-size: 13px;
+            color: white;
+        }
+
+            .login-links a {
+                display: block;
+                color: white;
+                margin-bottom: 5px;
+                text-decoration: none;
+            }
+
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Giriş Yap</h2>
+        <form asp-action="Login" method="post">
+            <input name="kullaniciAdi" type="text" placeholder="Kullanıcı Adı" required />
+            <input name="sifre" type="password" placeholder="Şifre" required />
+            <button type="submit" class="login-btn">Giriş Yap</button>
+        </form>
+        <a href="/Account/Register" style="display: block; margin-top: 10px; color: white; font-size: 13px;">
+            Hesabınız yok mu? Kayıt Ol
+        </a>
+        <a href="/Account/ForgotPassword" style="display: block; margin-top: 5px; color: white; font-size: 13px;">
+            Şifremi unuttum
+        </a>
+    </div>
+</body>
+</html>
+

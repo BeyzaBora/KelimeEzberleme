@@ -1,0 +1,109 @@
+﻿@model KelimeEzberleme.ViewModels.WordAddViewModel
+
+@{
+    ViewData["Title"] = "Kelime Ekle";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Kelime Ekle</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f4f4;
+            padding: 50px;
+        }
+
+        .form-box {
+            width: 500px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+            .form-box h2 {
+                margin-bottom: 20px;
+                color: #333;
+            }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            background-color: orange;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+            .btn:hover {
+                background-color: darkorange;
+            }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Yeni Kelime Ekle</h2>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="success-message">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <form asp-action="Add" method="post" enctype="multipart/form-data">
+            <input asp-for="EngWordName" placeholder="İngilizce Kelime" required />
+            <input asp-for="TurWordName" placeholder="Türkçe Karşılığı" required />
+
+            <label>Resim Yükle:</label>
+            <input asp-for="Image" type="file" accept="image/*" />
+
+            <div id="samples">
+                <label>Örnek Cümleler (En az 2):</label>
+                <input name="Samples" type="text" placeholder="Örnek cümle 1" required />
+                <input name="Samples" type="text" placeholder="Örnek cümle 2" required />
+            </div>
+
+            <button type="button" class="btn" onclick="addSample()">+ Cümle Ekle</button>
+            <br /><br />
+            <button type="submit" class="btn">Kaydet</button>
+        </form>
+
+        <br />
+        <a href="@Url.Action("Index", "Dashboard")" class="btn" style="background-color: gray;">🏠 Ana Sayfaya Dön</a>
+    </div>
+
+    <script>
+        function addSample() {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.name = "Samples";
+            input.placeholder = "Yeni örnek cümle";
+            input.style.marginTop = "5px";
+            document.getElementById("samples").appendChild(input);
+        }
+    </script>
+</body>
+</html>

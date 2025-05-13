@@ -1,0 +1,106 @@
+﻿@model KelimeEzberleme.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>Kayıt Ol</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('/images/arkaplan.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .register-container {
+            width: 400px;
+            margin: 80px auto;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15); /* Cam efekti arka */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px); /* 🧊 cam efekti */
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            text-align: center;
+        }
+
+            .register-container h2 {
+                color: white;
+                margin-bottom: 25px;
+            }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.5); /* input kutusu saydam */
+            backdrop-filter: blur(4px);
+            font-size: 14px;
+            color: #000;
+        }
+
+        input::placeholder {
+            color: #666;
+        }
+
+        .register-btn {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+            .register-btn:hover {
+                background-color: #45a049;
+            }
+
+        a {
+            color: white;
+            font-size: 13px;
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Kayıt Ol</h2>
+
+        <form asp-action="Register" method="post">
+            <input asp-for="FullName" placeholder="Ad Soyad" />
+            <span asp-validation-for="FullName" class="validation-message"></span>
+
+            <input asp-for="UserName" placeholder="Kullanıcı Adı" />
+            <span asp-validation-for="UserName" class="validation-message"></span>
+
+            <input asp-for="Email" placeholder="Email" />
+            <span asp-validation-for="Email" class="validation-message"></span>
+
+            <input asp-for="Password" type="password" placeholder="Şifre" />
+            <span asp-validation-for="Password" class="validation-message"></span>
+
+            <button type="submit" class="register-btn">Kayıt Ol</button>
+        </form>
+
+        <a href="/Account/Login">Zaten hesabım var</a>
+    </div>
+</body>
+</html>

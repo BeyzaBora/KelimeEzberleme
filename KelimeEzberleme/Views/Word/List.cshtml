@@ -1,0 +1,112 @@
+﻿@model List<KelimeEzberleme.Models.Word>
+
+@{
+    ViewData["Title"] = "Kelime Listesi";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Word List</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px;
+            background-color: #f0f0f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: orange;
+            color: white;
+        }
+
+        img {
+            height: 50px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-edit {
+            background-color: #007bff;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Word List</h2>
+
+    <a href="/Dashboard/Index" class="btn" style="background-color: gray; margin-bottom: 20px;">🏠 Ana Sayfaya Dön</a>
+
+    <table>
+        <tr>
+            <th>English</th>
+            <th>Turkish</th>
+            <th>Created At</th>
+            <th>Samples</th>
+            <th>Image</th>
+            <th>Actions</th>
+        </tr>
+        @foreach (var word in Model)
+        {
+            <tr>
+                <td>@word.EngWordName</td>
+                <td>@word.TurWordName</td>
+                <td>@word.CreatedAt.ToShortDateString()</td>
+                <td>
+                    <ul>
+                        @foreach (var s in word.Samples)
+                        {
+                            <li>@s.Samples</li>
+                        }
+                    </ul>
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(word.Picture))
+                    {
+                        <img src="@word.Picture" alt="resim" />
+                    }
+                </td>
+                <td class="actions">
+                    <a href="/Word/Edit/@word.WordID" class="btn btn-edit">✏️ Düzenle</a>
+                    <a href="/Word/Delete/@word.WordID" class="btn btn-delete"
+                       onclick="return confirm('Bu kelimeyi silmek istediğine emin misin?')">🗑️ Sil</a>
+                </td>
+            </tr>
+        }
+    </table>
+</body>
+</html>
