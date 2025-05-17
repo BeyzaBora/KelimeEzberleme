@@ -1,0 +1,175 @@
+﻿@using Newtonsoft.Json
+@model KelimeEzberleme.ViewModels.RaporViewModel
+
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f39c12;
+        padding: 30px;
+    }
+
+    .rapor-box {
+        background-color: #fff;
+        padding: 25px 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+    }
+
+    h2, h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    th {
+        background-color: #2980b9;
+        color: white;
+        padding: 12px;
+        text-align: left;
+    }
+
+    td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #ecf0f1;
+    }
+
+    tr:hover {
+        background-color: #f0f8ff;
+    }
+
+    canvas {
+        display: block;
+        margin: 20px auto;
+        max-width: 800px;
+    }
+
+    .btn-yazdir {
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+        .btn-yazdir:hover {
+            background-color: #34495e;
+        }
+
+    @@media print {
+        .btn-yazdir {
+            display: none;
+        }
+
+        header,
+        nav.navbar,
+        footer,
+        .footer,
+        .navbar,
+        .border-top {
+            display: none !important;
+        }
+    }
+
+</style>
+
+<!-- Yazdır Butonu -->
+<div style="text-align: right;">
+    <button onclick="window.print()" class="btn-yazdir">🖨️ Yazdır</button>
+</div>
+
+<!-- Genel Öğrenme Raporu -->
+<div class="rapor-box">
+    <h2>Öğrenme Raporu</h2>
+    <p><strong>Toplam Doğru Cevap Sayısı:</strong> @Model.ToplamDogruCevapSayisi</p>
+    <p><strong>Toplam Yanlış Cevap Sayısı:</strong> @Model.ToplamYanlisCevapSayisi</p>
+    <p><strong>Başarı Oranı:</strong> @Model.BasariOrani.ToString("0.00") %</p>
+    <p><strong>Öğrenilen Kelime Sayısı:</strong> @Model.OgrenilenKelimeSayisi</p>
+</div>
+
+<!-- Kategori Bazlı Tablo -->
+<div class="rapor-box">
+    <h3>Kategori Bazlı İstatistikler</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Kategori</th>
+                <th>Doğru Sayısı</th>
+                <th>Yanlış Sayısı</th>
+                <th>Başarı Oranı</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var kategori in Model.KategoriIstatistikleri)
+            {
+                <tr>
+                    <td>@kategori.KategoriAdi</td>
+                    <td>@kategori.DogruSayisi</td>
+                    <td>@kategori.YanlisSayisi</td>
+                    <td>@kategori.BasariOrani.ToString("0.00") %</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Grafik Alanı -->
+<div class="rapor-box">
+    <h3>Kategori Bazlı Doğru/Yanlış Grafiği</h3>
+    <canvas id="kategoriChart" width="400" height="200"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('kategoriChart').getContext('2d');
+    const kategoriChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(JsonConvert.SerializeObject(Model.KategoriIstatistikleri.Select(k => k.KategoriAdi))),
+            datasets: [
+                {
+                    label: 'Doğru',
+                    data: @Html.Raw(JsonConvert.SerializeObject(Model.KategoriIstatistikleri.Select(k => k.DogruSayisi))),
+                    backgroundColor: 'rgba(46, 204, 113, 0.7)'
+                },
+                {
+                    label: 'Yanlış',
+                    data: @Html.Raw(JsonConvert.SerializeObject(Model.KategoriIstatistikleri.Select(k => k.YanlisSayisi))),
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Kategori Bazlı Doğru/Yanlış Cevaplar'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Cevap Sayısı'
+                    }
+                }
+            }
+        }
+    });
+</script>
+

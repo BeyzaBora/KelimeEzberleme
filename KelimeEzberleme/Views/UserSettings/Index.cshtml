@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "Kullanıcı Ayarları";
+}
+
+<style>
+    body {
+        background-color: orange;
+    }
+
+    .ayarlar-kapsayici {
+        margin-top: 50px;
+        padding: 30px;
+        background-color: white;
+        border-radius: 10px;
+        width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .ayarlar-kapsayici h2 {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    input[type="number"] {
+        width: 100%;
+        padding: 8px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    button[type="submit"] {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #218838;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="ayarlar-kapsayici">
+    <h2>Kullanıcı Ayarları</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <form method="post" asp-action="UpdateQuizCount">
+        <div class="form-group">
+            <label for="wordCount">Günlük Quiz Soru Sayısı:</label>
+            <input type="number" id="wordCount" name="wordCount" value="@Model.WordCount" min="1" max="50" required />
+        </div>
+        <button type="submit">Güncelle</button>
+    </form>
+
+    <a href="@Url.Action("Index", "Dashboard")" class="btn btn-primary">Ana Sayfaya Dön</a>
+</div>

@@ -1,4 +1,5 @@
-﻿@model KelimeEzberleme.Models.InteractiveQuizViewModel
+﻿@using KelimeEzberleme.ViewModels
+@model InteractiveQuizViewModel
 @{
     Layout = "_Layout";
 }
@@ -111,12 +112,16 @@
                     }
                 </ul>
             </div>
-
-            <form method="post" asp-action="SubmitAnswer">
+            <form asp-action="SubmitAnswer" method="post">
                 <input type="hidden" name="WordID" value="@Model.WordID" />
-                <input type="text" name="userAnswer" placeholder="Türkçe karşılığını girin" required />
+
+                <input type="text" name="userAnswer" />
+
                 <button type="submit">Cevapla</button>
+
+                <button type="submit" name="skip" value="true" style="margin-left:10px;">Boş Bırak</button>
             </form>
+
         </div>
 
         <div class="answer-container">

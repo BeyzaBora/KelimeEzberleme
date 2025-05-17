@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 using System;
 using KelimeEzberleme.Helpers;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 public class QuizController : Controller
 {
@@ -18,12 +19,56 @@ public class QuizController : Controller
     // 🔹 Quiz Başlatma
     public IActionResult Quiz()
     {
-        // Çözülmemiş kelimeleri al
-        var quizWords = _context.Words
-            .Where(w => !w.IsLearned) // Bu kelimeler öğrenilmemiş olmalı
-            .OrderBy(x => Guid.NewGuid()) // Karışık sıraya
-            .Take(5) // İlk 5 kelimeyi al
+        var userId = HttpContext.Session.GetInt32("UserID");
+
+        if (userId == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Kullanıcının ayarlarını al
+        var userSettings = _context.UserSettings
+            .FirstOrDefault(u => u.UserID == userId);
+
+        if (userSettings == null)
+        {
+            // Eğer kullanıcı ayarı yoksa, varsayılan ayarı kullan
+            userSettings = new UserSettings
+            {
+                WordCount = 5 // Varsayılan 5
+            };
+        }
+
+        int wordCount = userSettings.WordCount;
+
+        DateTime now = DateTime.Now;
+        int UserID = userId.Value;
+
+        // Kullanıcının WordProgress kayıtlarını al, NextRepeat zamanı gelmiş ve öğrenilmemiş olanlar
+        var quizWords = _context.WordProgresses
+            .Include(wp => wp.Word) // Word navigasyonunu dahil et
+            .Where(wp => wp.UserID == userId
+                         && !wp.IsLearned
+                         && wp.NextRepeat <= now)
+            .OrderBy(x => Guid.NewGuid())
+            .Take(wordCount)
+            .Select(wp => wp.Word)  // sadece Word nesnesini alıyoruz
             .ToList();
+
+        // Eğer yeterli kelime yoksa, öğrenilmemiş ve WordProgress kaydı olmayan kelimelerle tamamla
+        if (quizWords.Count < wordCount)
+        {
+            int missingCount = wordCount - quizWords.Count;
+
+            var additionalWords = _context.Words
+                .Where(w => !_context.WordProgresses.Any(wp => wp.WordID == w.WordID && wp.UserID == userId))
+                .OrderBy(x => Guid.NewGuid())
+                .Take(missingCount)
+                .ToList();
+
+            quizWords.AddRange(additionalWords);
+        }
+
 
         // Verileri session'a kaydet
         HttpContext.Session.SetString("QuizWords", JsonConvert.SerializeObject(quizWords));
@@ -34,6 +79,7 @@ public class QuizController : Controller
 
         return RedirectToAction("NextQuestion"); // Soruyu göstermek için yönlendir
     }
+
 
     // 🔹 Soruyu Göster (View'e model gönderilir)
     public IActionResult NextQuestion()
@@ -46,8 +92,19 @@ public class QuizController : Controller
 
         var quizWords = JsonConvert.DeserializeObject<List<Word>>(quizWordsJson);
 
+        // Burada quizWords tanımlandıktan sonra kontrol yap
         if (currentIndex >= quizWords.Count)
-            return RedirectToAction("QuizResultsInteractive"); // Bütün sorular bitince sonuç sayfasına yönlendir
+        {
+            if (quizWords.Count == 0)
+            {
+                ViewBag.Message = "Tebrikler! Şu anda cevaplanmamış veya tekrar edilmesi gereken kelime bulunmamaktadır. Sıradaki kelimeler belirlenen tekrar tarihine göre size sunulacaktır. Lütfen daha sonra tekrar deneyiniz.";
+                return View("QuizEmpty"); // Bu özel mesaj için yeni bir view tasarla
+            }
+            else
+            {
+                return RedirectToAction("QuizResultsInteractive");
+            }
+        }
 
         var word = quizWords[currentIndex];
         var model = new InteractiveQuizViewModel
@@ -66,53 +123,81 @@ public class QuizController : Controller
 
         return View("Quiz", model); // Quiz sayfasını görüntüle
     }
-
-    // 🔹 Cevap Gönderme
     [HttpPost]
-    public IActionResult SubmitAnswer(int WordID, string userAnswer)
+    public IActionResult SubmitAnswer(int WordID, string userAnswer, string skip)
     {
-        // Eğer cevap boş bırakılmışsa, işlem yapılmaz
-        if (WordID == 0 || string.IsNullOrWhiteSpace(userAnswer))
+        // Eğer WordID geçersizse, sonraki soruya geç
+        if (WordID == 0)
             return RedirectToAction("NextQuestion");
 
-        var quizWordsJson = HttpContext.Session.GetString("QuizWords");
-        var currentIndex = HttpContext.Session.GetInt32("currentIndex") ?? 0;
+        // Boş bırakma seçeneği kontrolü
+        if (!string.IsNullOrEmpty(skip) && skip == "true")
+        {
+            int? userId = HttpContext.Session.GetInt32("UserID");
+            if (userId == null || userId == 0)
+                return RedirectToAction("Login", "Account");
 
-        if (string.IsNullOrEmpty(quizWordsJson))
+            var quizWordsJson = HttpContext.Session.GetString("QuizWords");
+            var currentIndex = HttpContext.Session.GetInt32("currentIndex") ?? 0;
+
+            if (string.IsNullOrEmpty(quizWordsJson))
+                return RedirectToAction("QuizResultsInteractive");
+
+            var quizWords = JsonConvert.DeserializeObject<List<Word>>(quizWordsJson);
+            var word = quizWords.ElementAtOrDefault(currentIndex);
+
+            // Cevap geçmişine boş bırakma kaydı ekle
+            var answers = HttpContext.Session.GetObjectFromJson<List<string>>("answers") ?? new List<string>();
+            answers.Add($"Kelime: {word?.EngWordName} - Doğru: {word?.TurWordName} - Sen boş bıraktın.");
+            HttpContext.Session.SetObjectAsJson("answers", answers);
+
+            // Soruyu boş geç, currentIndex arttır
+            HttpContext.Session.SetInt32("currentIndex", currentIndex + 1);
+
+            return RedirectToAction("NextQuestion");
+        }
+
+        // Normal cevap kontrolü (boş cevap verilmişse sonraki soruya geç)
+        if (string.IsNullOrWhiteSpace(userAnswer))
+            return RedirectToAction("NextQuestion");
+
+        var quizWordsJson2 = HttpContext.Session.GetString("QuizWords");
+        var currentIndex2 = HttpContext.Session.GetInt32("currentIndex") ?? 0;
+
+        if (string.IsNullOrEmpty(quizWordsJson2))
             return RedirectToAction("QuizResultsInteractive");
 
-        var quizWords = JsonConvert.DeserializeObject<List<Word>>(quizWordsJson);
-        if (currentIndex >= quizWords.Count)
+        var quizWords2 = JsonConvert.DeserializeObject<List<Word>>(quizWordsJson2);
+        if (currentIndex2 >= quizWords2.Count)
             return RedirectToAction("QuizResultsInteractive");
 
-        var word = quizWords[currentIndex];
-        var correctAnswer = word.TurWordName?.Trim().ToLower();
+        var word2 = quizWords2[currentIndex2];
+        var correctAnswer = word2.TurWordName?.Trim().ToLower();
         var userAns = userAnswer?.Trim().ToLower();
         bool isCorrect = correctAnswer == userAns;
 
-        int? userId = HttpContext.Session.GetInt32("UserID");
-        if (userId == null || userId == 0)
-        {
-            // Giriş yapılmamışsa, login'e yönlendir
+        int? userId2 = HttpContext.Session.GetInt32("UserID");
+        if (userId2 == null || userId2 == 0)
             return RedirectToAction("Login", "Account");
-        }
+
+        var progress = _context.WordProgresses
+            .FirstOrDefault(p => p.UserID == userId2 && p.WordID == WordID);
 
         if (isCorrect)
         {
             HttpContext.Session.SetInt32("correct", (HttpContext.Session.GetInt32("correct") ?? 0) + 1);
 
-            var progress = _context.WordProgresses
-                .FirstOrDefault(p => p.UserID == userId && p.WordID == WordID);
-
             if (progress == null)
             {
                 progress = new WordProgress
                 {
-                    UserID = userId.Value,
+                    UserID = userId2.Value,
                     WordID = WordID,
                     CorrectCount = 1,
-                    NextRepeat = DateTime.Now,
-                    LastAnswered = DateTime.Now
+                    IncorrectCount = 0,
+                    NextRepeat = CalculateNextRepeatTime(1),
+                    LastAnswered = DateTime.Now,
+                    IsLearned = false
                 };
 
                 _context.WordProgresses.Add(progress);
@@ -120,59 +205,100 @@ public class QuizController : Controller
             else
             {
                 progress.CorrectCount++;
-                progress.NextRepeat = CalculateNextRepeatTime(progress.CorrectCount);
                 progress.LastAnswered = DateTime.Now;
+                progress.NextRepeat = CalculateNextRepeatTime(progress.CorrectCount);
+
+                if (progress.CorrectCount >= 6)
+                {
+                    progress.IsLearned = true;
+
+                    var wordToUpdate = _context.Words.FirstOrDefault(w => w.WordID == WordID);
+                    if (wordToUpdate != null && !wordToUpdate.IsLearned)
+                    {
+                        wordToUpdate.IsLearned = true;
+                    }
+                }
             }
 
-            try
+            _context.SaveChanges();
+
+            // Kelime öğrenildiyse quiz listesini güncelle
+            if (progress.IsLearned)
             {
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Veritabanına kaydetme hatası: {ex.Message}");
-                throw;
+                var userSettings = _context.UserSettings.FirstOrDefault(u => u.UserID == userId2);
+                int wordCount = userSettings?.WordCount ?? 5;
+
+                var updatedQuizWords = _context.Words
+                    .Where(w => !w.IsLearned)
+                    .OrderBy(x => Guid.NewGuid())
+                    .Take(wordCount)
+                    .ToList();
+
+                if (updatedQuizWords.Count < wordCount)
+                {
+                    int missingCount = wordCount - updatedQuizWords.Count;
+
+                    var additionalWords = _context.Words
+                        .Where(w => !_context.WordProgresses.Any(wp => wp.WordID == w.WordID && wp.UserID == userId2))
+                        .OrderBy(x => Guid.NewGuid())
+                        .Take(missingCount)
+                        .ToList();
+
+                    updatedQuizWords.AddRange(additionalWords);
+                }
+
+                HttpContext.Session.SetString("QuizWords", JsonConvert.SerializeObject(updatedQuizWords));
+                HttpContext.Session.SetInt32("currentIndex", 0);
             }
         }
         else
         {
-            var progress = _context.WordProgresses
-                .FirstOrDefault(p => p.UserID == userId && p.WordID == WordID);
+            HttpContext.Session.SetInt32("incorrect", (HttpContext.Session.GetInt32("incorrect") ?? 0) + 1);
 
-            if (progress != null)
+            if (progress == null)
             {
-                progress.CorrectCount = 0;
-                progress.NextRepeat = DateTime.Now;
-                progress.LastAnswered = DateTime.Now;
+                progress = new WordProgress
+                {
+                    UserID = userId2.Value,
+                    WordID = WordID,
+                    CorrectCount = 0,
+                    IncorrectCount = 1,
+                    NextRepeat = DateTime.Now,
+                    LastAnswered = DateTime.Now,
+                    IsLearned = false
+                };
 
-                try
-                {
-                    _context.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Veritabanına kaydetme hatası: {ex.Message}");
-                    throw;
-                }
+                _context.WordProgresses.Add(progress);
+            }
+            else
+            {
+                progress.IncorrectCount++;
+                progress.CorrectCount = 0;
+                progress.LastAnswered = DateTime.Now;
+                progress.NextRepeat = DateTime.Now;
+                progress.IsLearned = false;
             }
 
-            HttpContext.Session.SetInt32("incorrect", (HttpContext.Session.GetInt32("incorrect") ?? 0) + 1);
+            _context.SaveChanges();
         }
 
-        var answers = HttpContext.Session.GetObjectFromJson<List<string>>("answers") ?? new List<string>();
-        answers.Add($"Kelime: {word.EngWordName} - Doğru: {word.TurWordName} - Senin Cevabın: {userAnswer} - {(isCorrect ? "Doğru" : "Yanlış")}");
+        // Cevap geçmişine kayıt
+        var answers2 = HttpContext.Session.GetObjectFromJson<List<string>>("answers") ?? new List<string>();
+        answers2.Add($"Kelime: {word2.EngWordName} - Doğru: {word2.TurWordName} - Senin Cevabın: {userAnswer} - {(isCorrect ? "Doğru" : "Yanlış")}");
+        HttpContext.Session.SetObjectAsJson("answers", answers2);
 
-        HttpContext.Session.SetObjectAsJson("answers", answers);
-
-        HttpContext.Session.SetInt32("currentIndex", currentIndex + 1);
+        // Sonraki soruya geç
+        HttpContext.Session.SetInt32("currentIndex", currentIndex2 + 1);
 
         return RedirectToAction("NextQuestion");
     }
 
-    private DateTime CalculateNextRepeatTime(int correctCount)
+
+
+    private DateTime CalculateNextRepeatTime(int CorrectCount)
     {
         DateTime now = DateTime.Now;
-        switch (Math.Min(correctCount, 6))
+        switch (Math.Min(CorrectCount, 6))
         {
             case 1: return now.AddDays(1);     // 1 gün sonra tekrar
             case 2: return now.AddDays(7);     // 1 hafta sonra tekrar

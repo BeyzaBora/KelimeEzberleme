@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Kelime Bulunamadı";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        body {
+            background-color: #FFA500; /* Turuncu arka plan */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            /* flex özellikleri kaldırıldı */
+            text-align: left;
+        }
+
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        a.btn {
+            background-color: #222;
+            color: #FFA500;
+            text-decoration: none;
+            padding: 12px 25px;
+            margin: 0 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+        }
+
+            a.btn:hover {
+                background-color: #000;
+                color: #ffb84d;
+            }
+    </style>
+</head>
+<body style="background-color: #FFA500; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; margin: 0; padding: 20px;">
+    <h2>Henüz öğrenilmiş kelime bulunmamaktadır.</h2>
+    <p>Lütfen önce daha fazla kelime öğrenin ve tekrar deneyin.</p>
+
+    <div>
+        <a asp-action="StartGame" class="btn">Tekrar Dene</a>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn">Ana Sayfa</a>
+    </div>
+</body>
+
+</html>

@@ -31,7 +31,7 @@
                 color: #333;
             }
 
-        input[type="text"], input[type="file"] {
+        input[type="text"], input[type="file"], select {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
@@ -83,7 +83,7 @@
             </div>
         }
 
-        <form asp-action="Edit" asp-route-id="@ViewBag.WordID" method="post" enctype="multipart/form-data">
+        <form asp-action="EditPost" asp-route-id="@ViewBag.WordID" method="post" enctype="multipart/form-data">
             <input asp-for="EngWordName" placeholder="İngilizce Kelime" required />
             <input asp-for="TurWordName" placeholder="Türkçe Karşılığı" required />
 
@@ -110,6 +110,16 @@
 
             <button type="button" class="btn" onclick="addSample()">+ Cümle Ekle</button>
             <br /><br />
+
+            <!-- Kategori Seçim Alanı -->
+            <label>Kategori Seçin:</label>
+            <select asp-for="SelectedCategoryID" asp-items="Model.CategoryList" class="form-control">
+                <option value="">-- Kategori Seçiniz --</option>
+            </select>
+
+
+            <br /><br />
+
             <button type="submit" class="btn">Güncelle</button>
             <a href="/Word/List" class="btn" style="background-color: gray;">Listeye Dön</a>
         </form>

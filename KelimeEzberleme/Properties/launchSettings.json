@@ -10,7 +10,7 @@
     },
     "profiles": {
         "http": {
-            "commandName": "Project",
+            "commandName": "Project", // Bu kısımda proje adını değiştirmemelisiniz
             "dotnetRunMessages": true,
             "launchBrowser": true,
             "applicationUrl": "http://localhost:5259",
@@ -19,10 +19,10 @@
             }
         },
         "https": {
-            "commandName": "Project",
+            "commandName": "Project", 
             "dotnetRunMessages": true,
             "launchBrowser": true,
-            "applicationUrl": "http://localhost:5259", // Değiştirildi
+            "applicationUrl": "http://localhost:5259",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }

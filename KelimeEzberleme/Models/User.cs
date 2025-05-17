@@ -13,7 +13,7 @@ namespace KelimeEzberleme.Models
         public string? UserName { get; set; }
 
         [Required, EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         [Required]
         public string? Password { get; set; }
@@ -21,5 +21,8 @@ namespace KelimeEzberleme.Models
         public DateTime RegistrationDate { get; set; } = DateTime.Now;
 
         public bool IsActive { get; set; } = true;
+        public UserSettings UserSettings { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? TokenExpireDate { get; set; }
     }
 }

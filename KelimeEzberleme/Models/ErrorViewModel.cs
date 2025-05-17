@@ -1,4 +1,4 @@
-namespace KelimeEzberleme.Models
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class ErrorViewModel
     {

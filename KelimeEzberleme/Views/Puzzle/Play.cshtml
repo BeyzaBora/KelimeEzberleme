@@ -1,0 +1,184 @@
+﻿@model KelimeEzberleme.Models.PuzzleGame
+
+@{
+    ViewData["Title"] = "Kelime Bulmaca";
+}
+
+<style>
+    body {
+        background-color: #FFA500; /* Turuncu */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #fff;
+        padding: 40px;
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 30px;
+        text-shadow: 1px 1px 2px #00000080;
+    }
+
+    form input[type="text"] {
+        font-size: 1.5rem;
+        padding: 8px;
+        width: 250px;
+        border-radius: 8px;
+        border: none;
+        text-transform: uppercase;
+        text-align: center;
+        margin-right: 10px;
+    }
+
+    form button {
+        background-color: #222;
+        color: #FFA500;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        form button:hover {
+            background-color: #000;
+        }
+
+    p {
+        font-size: 1.2rem;
+        margin: 8px 0;
+    }
+
+    /* Tahminler listesi */
+    ul.guess-list {
+        list-style: none;
+        padding-left: 0;
+        max-width: 400px;
+        margin: 20px auto 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        /* Her tahmin satırı */
+        ul.guess-list li {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+            /* Harf blokları */
+            ul.guess-list li span {
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+                text-align: center;
+                font-size: 1.2rem;
+                font-weight: bold;
+                border-radius: 6px;
+                color: white;
+                user-select: none;
+            }
+
+    .green {
+        background-color: #4CAF50;
+        text-shadow: 0 0 5px #2e7d32;
+    }
+
+    .yellow {
+        background-color: #FFD700;
+        color: black;
+        text-shadow: 0 0 5px #b8860b;
+    }
+
+    .gray {
+        background-color: #757575;
+        text-shadow: none;
+    }
+
+    /* Baş harfi blokları */
+    .letter-block {
+        width: 40px;
+        height: 40px;
+        border: 2px solid white;
+        color: white;
+        font-weight: bold;
+        font-size: 1.5rem;
+        text-align: center;
+        line-height: 40px;
+        border-radius: 6px;
+        user-select: none;
+        background-color: rgba(255, 255, 255, 0.15);
+        margin: 0 2px;
+    }
+</style>
+
+<h2>🧩 Kelime Bulmaca Oyunu</h2>
+
+@if (TempData["Error"] != null)
+{
+    <p style="color: red; font-weight: bold;">@TempData["Error"]</p>
+}
+
+@if (Model.IsFinished)
+{
+    <h3>
+        @if (Model.IsWon)
+        {
+            <span style="color: #4CAF50;">Tebrikler! Kelimeyi doğru buldunuz: <strong>@Model.HiddenWord</strong></span>
+        }
+        else
+        {
+            <span style="color: #f44336;">Üzgünüz, tahmin hakkınız doldu. Doğru kelime: <strong>@Model.HiddenWord</strong></span>
+        }
+    </h3>
+    <!-- Ana sayfa ve yeni oyun butonları -->
+    <a href="@Url.Action("Index", "Dashboard")" class="btn btn-secondary" style="margin-top:10px; margin-left:10px;">
+        🏠 Ana Sayfaya Dön
+    </a>
+    <a href="@Url.Action("StartGame")" class="btn btn-primary" style="margin-top:20px;">
+        Yeni Oyun Başlat
+    </a>
+}
+else
+{
+    <a href="@Url.Action("Index", "Dashboard")" class="btn btn-secondary" style="margin-top: 20px;">🏠 Ana Sayfaya Dön</a>
+
+    <p>Kelime uzunluğu: <strong>@ViewBag.WordLength</strong> harf</p>
+
+    <div style="display:flex; justify-content:center; gap:8px; margin-bottom: 20px;">
+        @for (int i = 0; i < (int)ViewBag.WordLength; i++)
+        {
+            var letter = (i == 0) ? ((char)ViewBag.FirstLetter).ToString() : "";
+            <div class="letter-block">@letter</div>
+        }
+    </div>
+
+    <p>Kalan tahmin hakkı: <strong>@(Model.MaxGuesses - Model.Guesses.Count)</strong></p>
+
+    <form asp-action="Guess" method="post" style="margin-top: 15px;">
+        <input name="guess" type="text" maxlength="@ViewBag.WordLength" autofocus autocomplete="off" required
+               oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '').toUpperCase()" />
+        <button type="submit" class="btn btn-success">Tahmin Et</button>
+    </form>
+
+    <h4 style="margin-top: 25px;">Yapılan Tahminler:</h4>
+    <ul class="guess-list">
+        @foreach (var result in Model.GuessResults)
+        {
+            <li>
+                @foreach (var letter in result.Letters)
+                {
+                    var cssClass = letter.Color switch
+                    {
+                        "green" => "green",
+                        "yellow" => "yellow",
+                        _ => "gray"
+                    };
+                    <span class="@cssClass">@letter.Letter.ToString().ToUpper()</span>
+                }
+            </li>
+        }
+    </ul>
+}

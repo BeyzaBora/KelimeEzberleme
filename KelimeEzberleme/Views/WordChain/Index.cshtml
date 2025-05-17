@@ -1,0 +1,218 @@
+﻿@model KelimeEzberleme.ViewModels.WordChainViewModel
+
+<style>
+    body {
+        background-color: #fff4e6; /* Yumuşak krem-turuncu */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #4d3b1f; /* Koyu kahverengimsi turuncu */
+        margin: 0;
+        padding: 30px 20px;
+    }
+
+    .image-style {
+        max-width: 100%; /* Kutu genişliğini aşmasın */
+        max-height: 300px; /* Maksimum yükseklik */
+        width: auto;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(230,126,34,0.5);
+        object-fit: contain; /* Oranı koruyarak küçült */
+        display: block;
+        margin-top: 15px;
+    }
+
+
+    .container {
+        max-width: 850px;
+        margin: 0 auto;
+        background-color: #fff8f0; /* Açık krem */
+        padding: 25px 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgb(230 126 34 / 0.2);
+        border: 1px solid #f0a500; /* Yumuşak turuncu sınır */
+    }
+
+    h2, h3, h4 {
+        color: #d35400; /* Sıcak turuncu */
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    select {
+        background-color: #fff;
+        color: #4d3b1f;
+        border-radius: 6px;
+        border: 1px solid #f0a500;
+        padding: 6px 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+        width: 200px;
+    }
+
+        select:focus {
+            border-color: #d35400;
+            outline: none;
+            box-shadow: 0 0 6px rgba(211, 84, 0, 0.4);
+        }
+
+    button {
+        background-color: #d35400;
+        color: #fff8f0;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background-color 0.3s ease;
+        font-size: 15px;
+        box-shadow: 0 2px 6px rgba(211, 84, 0, 0.4);
+    }
+
+        button:hover {
+            background-color: #a84300;
+        }
+
+    .top-bar {
+        margin-bottom: 30px;
+        text-align: right;
+    }
+
+        .top-bar button {
+            font-size: 14px;
+            padding: 8px 18px;
+            background-color: transparent;
+            color: #d35400;
+            border: 2px solid #d35400;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            box-shadow: none;
+        }
+
+            .top-bar button:hover {
+                background-color: #d35400;
+                color: #fff8f0;
+                box-shadow: 0 2px 8px rgba(211, 84, 0, 0.5);
+            }
+
+    .sentences-box {
+        background-color: #fff3e0;
+        border: 1px solid #f0a500;
+        padding: 20px 25px;
+        border-radius: 10px;
+        margin-top: 30px;
+        font-size: 16px;
+        line-height: 1.5;
+        color: #5d3a00;
+        box-shadow: 0 2px 8px rgba(240, 165, 0, 0.3);
+        white-space: pre-wrap;
+    }
+
+    .select-container {
+        display: flex;
+        gap: 25px;
+    }
+</style>
+
+
+<div class="container">
+
+    <div class="top-bar">
+        <form asp-controller="Dashboard" asp-action="Index" method="get" style="display:inline;">
+            <button type="submit">Ana Sayfaya Dön</button>
+        </form>
+    </div>
+    <h3>Hikaye oluşturmak istediğiniz kelimeleri seçin.</h3>
+
+    <form id="wordForm" asp-action="Index" method="post">
+
+        <div class="select-container">
+
+            <!-- Sol kutu: Tüm öğrenilmiş kelimeler -->
+            <div>
+                <h4>Tüm Öğrenilmiş Kelimeler</h4>
+                <select id="availableWords" multiple size="10">
+                    @foreach (var word in Model.AvailableWords)
+                    {
+                        <option value="@word.WordID">@word.EngWordName - @word.TurWordName</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Sağ kutu: Seçilen Kelimeler -->
+            <div>
+                <h4>Seçilen Kelimeler</h4>
+                <select id="selectedWords" name="selectedWordIds" multiple size="10">
+                    @if (Model.SelectedWordIds != null)
+                    {
+                        foreach (var id in Model.SelectedWordIds)
+                        {
+                            var word = Model.LearnedWords.FirstOrDefault(w => w.WordID == id);
+                            if (word != null)
+                            {
+                                <option value="@word.WordID">@word.EngWordName - @word.TurWordName</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+        </div>
+
+        <input type="hidden" id="selectedWordIdsInput" name="selectedWordIds" />
+
+        <button type="submit">Cümleyi Oluştur</button>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.SelectedSentencesParagraph))
+    {
+        <div class="sentences-box" role="region" aria-live="polite" aria-atomic="true">
+            <h3>Seçilen Kelimelerin Hikayesi:</h3>
+            <p>@Model.SelectedSentencesParagraph</p>
+
+            @if (!string.IsNullOrEmpty(Model.ImagePath))
+            {
+                <img src="@Model.ImagePath" alt="Cümle resmi" class="image-style" />
+            }
+        </div>
+    }
+</div>
+
+<script>
+    const available = document.getElementById('availableWords');
+    const selected = document.getElementById('selectedWords');
+    const hiddenInput = document.getElementById('selectedWordIdsInput');
+
+    available.ondblclick = function () {
+        moveOption(available, selected);
+    };
+
+    selected.ondblclick = function () {
+        moveOption(selected, available);
+    };
+
+    function moveOption(fromSelect, toSelect) {
+        const selectedOption = fromSelect.options[fromSelect.selectedIndex];
+        if (!selectedOption) return;
+
+        for (let i = 0; i < toSelect.options.length; i++) {
+            if (toSelect.options[i].value === selectedOption.value) {
+                return;
+            }
+        }
+
+        const newOption = new Option(selectedOption.text, selectedOption.value);
+        toSelect.add(newOption);
+        fromSelect.remove(fromSelect.selectedIndex);
+    }
+
+    document.getElementById('wordForm').onsubmit = function () {
+        let selectedValues = [];
+        for (let i = 0; i < selected.options.length; i++) {
+            selectedValues.push(selected.options[i].value);
+        }
+        hiddenInput.value = selectedValues.join(',');
+        return true;
+    };
+</script>

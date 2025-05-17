@@ -13,7 +13,7 @@
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: #f4f4f4;
+            background: #f39c12;
             padding: 50px;
         }
 
@@ -31,7 +31,7 @@
                 color: #333;
             }
 
-        input[type="text"], input[type="file"] {
+        input[type="text"], input[type="file"], select {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
@@ -60,6 +60,15 @@
             margin-bottom: 15px;
             text-align: center;
         }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -73,7 +82,19 @@
             </div>
         }
 
-        <form asp-action="Add" method="post" enctype="multipart/form-data">
+        @if (TempData["Debug"] != null)
+        {
+            <div class="error-message">
+                @TempData["Debug"]
+            </div>
+        }
+
+        @Html.ValidationSummary(true, "", new { @class = "error-message" })
+
+        @using (Html.BeginForm("Add", "Word", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
             <input asp-for="EngWordName" placeholder="İngilizce Kelime" required />
             <input asp-for="TurWordName" placeholder="Türkçe Karşılığı" required />
 
@@ -82,27 +103,43 @@
 
             <div id="samples">
                 <label>Örnek Cümleler (En az 2):</label>
-                <input name="Samples" type="text" placeholder="Örnek cümle 1" required />
-                <input name="Samples" type="text" placeholder="Örnek cümle 2" required />
+                <input name="Samples[0]" type="text" placeholder="Örnek cümle 1" required />
+                <input name="Samples[1]" type="text" placeholder="Örnek cümle 2" required />
+
             </div>
 
             <button type="button" class="btn" onclick="addSample()">+ Cümle Ekle</button>
-            <br /><br />
+
+            <br />
+
+            <br />
+
+            <!-- Kategori Seçimi -->
+            <label>Kategori Seçin:</label>
+            <select asp-for="SelectedCategoryID" asp-items="Model.CategoryList" required>
+                <option value="">-- Seçiniz --</option>
+            </select>
+
+
+            <br />
             <button type="submit" class="btn">Kaydet</button>
-        </form>
+        }
 
         <br />
         <a href="@Url.Action("Index", "Dashboard")" class="btn" style="background-color: gray;">🏠 Ana Sayfaya Dön</a>
     </div>
 
     <script>
+        let sampleCount = 2; // ilk 2 input var zaten
+
         function addSample() {
             const input = document.createElement("input");
             input.type = "text";
-            input.name = "Samples";
+            input.name = `Samples[${sampleCount}]`;
             input.placeholder = "Yeni örnek cümle";
             input.style.marginTop = "5px";
             document.getElementById("samples").appendChild(input);
+            sampleCount++;
         }
     </script>
 </body>

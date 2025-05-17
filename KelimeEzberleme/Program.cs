@@ -1,34 +1,73 @@
-﻿using KelimeEzberleme.Data;
-using KelimeEzberleme.Models;
+﻿using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using KelimeEzberleme.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using KelimeEzberleme.Services;
+using KelimeEzberleme.Models;  // Eğer EmailSettings bu namespace içindeyse
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ➕ Servisler buraya!
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Geliştirme ortamı olarak ayarlandı
+builder.Environment.EnvironmentName = "Development";
 
+// Veritabanı bağlantısı ayarlanıyor
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.PendingModelChangesWarning));
+});
+
+// Controller ve view desteği ekleniyor
 builder.Services.AddControllersWithViews();
-builder.Services.AddSession(); // 🔥 Bu satır Build'dan ÖNCE olacak
+
+// Session yapılandırması
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // 30 dakika boyunca oturum açık kalır
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true; // Cookie izni gerekmez (GDPR için)
+});
+
+
+// HttpClient servisi ekleniyor (REST API çağrıları için)
+builder.Services.AddHttpClient();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
-// 🌐 Middleware'ler
-if (!app.Environment.IsDevelopment())
+// Ortama göre hata sayfası ayarlanıyor
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
 }
 
+// Statik dosyalar sunuluyor
 app.UseStaticFiles();
+
 app.UseRouting();
 
-app.UseSession(); // ✅ Session burada aktif edilir
+// Session middleware kullanılıyor
+app.UseSession();
+
 app.UseAuthorization();
 
-// Tek bir portu belirlemek için UseUrls metodunu burada kullanıyoruz
-builder.WebHost.UseUrls("http://localhost:5259");  // Bu satır, portu belirler
+// Route ayarları
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var seeder = new DataSeeder(context);
+    seeder.Seed();
+}
+
 
 app.Run();
+

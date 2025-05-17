@@ -9,7 +9,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Word List</title>
+    <title>Kelime Listesi</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -67,25 +67,24 @@
     </style>
 </head>
 <body>
-    <h2>Word List</h2>
+    <h2>Kelime Listesi</h2>
 
     <a href="/Dashboard/Index" class="btn" style="background-color: gray; margin-bottom: 20px;">🏠 Ana Sayfaya Dön</a>
 
     <table>
         <tr>
-            <th>English</th>
-            <th>Turkish</th>
-            <th>Created At</th>
-            <th>Samples</th>
-            <th>Image</th>
-            <th>Actions</th>
+            <th>İngilizce</th>
+            <th>Türkçe</th>
+            <th>Örnekler</th>
+            <th>Kategori</th>
+            <th>Resim</th>
+            <th>İşlemler</th>
         </tr>
         @foreach (var word in Model)
         {
             <tr>
                 <td>@word.EngWordName</td>
                 <td>@word.TurWordName</td>
-                <td>@word.CreatedAt.ToShortDateString()</td>
                 <td>
                     <ul>
                         @foreach (var s in word.Samples)
@@ -93,6 +92,42 @@
                             <li>@s.Samples</li>
                         }
                     </ul>
+                </td>
+                <td>
+                    @switch (word.KategoriID)
+                    {
+                        case 1:
+                            <p>Meyve</p>
+                            break;
+                        case 2:
+                            <p>Sebze</p>
+                            break;
+                        case 3:
+                            <p>Nesne</p>
+                            break;
+                        case 4:
+                            <p>Bitki</p>
+                            break;
+                        case 5:
+                            <p>Özne</p>
+                            break;
+                        case 6:
+                            <p>Hayvan</p>
+                            break;
+                        case 7:
+                            <p>Gıda</p>
+                            break;
+                        case 8:
+                            <p>Atmosfer</p>
+                            break;
+                        case 9:
+                            <p>Fiil</p>
+                            break;
+                        default:
+                            <p>Belirsiz</p>
+                            break;
+                    }
+
                 </td>
                 <td>
                     @if (!string.IsNullOrEmpty(word.Picture))

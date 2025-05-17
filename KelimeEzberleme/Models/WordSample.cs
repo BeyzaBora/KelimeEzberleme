@@ -14,7 +14,13 @@ namespace KelimeEzberleme.Models
         // İlişki
         public int WordID { get; set; }
 
+        // Nullable KategoriID
+        public int? KategoriID { get; set; }  // Nullable yapıyoruz
+        public Kategori Kategori { get; set; }
+
         [ForeignKey("WordID")]
         public Word? Word { get; set; }
     }
+
+
 }

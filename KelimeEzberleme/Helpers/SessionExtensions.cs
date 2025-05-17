@@ -5,17 +5,29 @@ namespace KelimeEzberleme.Helpers
 {
     public static class SessionExtensions
     {
-        // JSON formatında veri kaydetmek için
+        // Nesneyi JSON olarak string'e çevirip Session'a kaydeder
         public static void SetObjectAsJson(this ISession session, string key, object value)
         {
-            session.SetString(key, JsonConvert.SerializeObject(value));
+            if (value == null)
+            {
+                session.Remove(key);
+                return;
+            }
+
+            string jsonData = JsonConvert.SerializeObject(value);
+            session.SetString(key, jsonData);
         }
 
-        // JSON formatındaki veriyi geri almak için
+        // Session'dan JSON string alır ve nesneye deserialize eder
         public static T GetObjectFromJson<T>(this ISession session, string key)
         {
-            var value = session.GetString(key);
-            return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
+            var jsonData = session.GetString(key);
+            if (string.IsNullOrEmpty(jsonData))
+            {
+                return default;
+            }
+
+            return JsonConvert.DeserializeObject<T>(jsonData);
         }
     }
 }

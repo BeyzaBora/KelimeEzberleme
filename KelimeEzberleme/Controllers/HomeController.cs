@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using KelimeEzberleme.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace KelimeEzberleme.Controllers
 {
@@ -26,7 +27,10 @@ namespace KelimeEzberleme.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+            return View(new ErrorViewModel { RequestId = requestId });
         }
     }
-}
+
+    }
+
