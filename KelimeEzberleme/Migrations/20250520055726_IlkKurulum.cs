@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace KelimeEzberleme.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class IlkKurulum : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -51,7 +51,7 @@ namespace KelimeEzberleme.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RegistrationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordResetToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordResetToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TokenExpireDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -173,6 +173,26 @@ namespace KelimeEzberleme.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "WordSentences",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WordId = table.Column<int>(type: "int", nullable: false),
+                    Sentence = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WordSentences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WordSentences_Words_WordId",
+                        column: x => x.WordId,
+                        principalTable: "Words",
+                        principalColumn: "WordID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Kategoriler",
                 columns: new[] { "KategoriID", "KategoriAd" },
@@ -219,6 +239,11 @@ namespace KelimeEzberleme.Migrations
                 name: "IX_WordSamples_WordID",
                 table: "WordSamples",
                 column: "WordID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WordSentences_WordId",
+                table: "WordSentences",
+                column: "WordId");
         }
 
         /// <inheritdoc />
@@ -235,6 +260,9 @@ namespace KelimeEzberleme.Migrations
 
             migrationBuilder.DropTable(
                 name: "WordSamples");
+
+            migrationBuilder.DropTable(
+                name: "WordSentences");
 
             migrationBuilder.DropTable(
                 name: "GuessResults");

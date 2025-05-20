@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KelimeEzberleme.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250516111940_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250520055726_IlkKurulum")]
+    partial class IlkKurulum
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,7 +158,6 @@ namespace KelimeEzberleme.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordResetToken")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("RegistrationDate")
@@ -291,6 +290,28 @@ namespace KelimeEzberleme.Migrations
                     b.ToTable("WordSamples");
                 });
 
+            modelBuilder.Entity("KelimeEzberleme.Models.WordSentence", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Sentence")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WordId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WordId");
+
+                    b.ToTable("WordSentences");
+                });
+
             modelBuilder.Entity("KelimeEzberleme.Models.LetterStatus", b =>
                 {
                     b.HasOne("KelimeEzberleme.Models.GuessResult", null)
@@ -348,6 +369,17 @@ namespace KelimeEzberleme.Migrations
                     b.Navigation("Word");
                 });
 
+            modelBuilder.Entity("KelimeEzberleme.Models.WordSentence", b =>
+                {
+                    b.HasOne("KelimeEzberleme.Models.Word", "Word")
+                        .WithMany("Sentences")
+                        .HasForeignKey("WordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Word");
+                });
+
             modelBuilder.Entity("KelimeEzberleme.Models.GuessResult", b =>
                 {
                     b.Navigation("Letters");
@@ -362,6 +394,8 @@ namespace KelimeEzberleme.Migrations
             modelBuilder.Entity("KelimeEzberleme.Models.Word", b =>
                 {
                     b.Navigation("Samples");
+
+                    b.Navigation("Sentences");
 
                     b.Navigation("WordProgresses");
                 });
