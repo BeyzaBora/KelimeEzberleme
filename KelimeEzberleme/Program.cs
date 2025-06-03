@@ -8,7 +8,7 @@ using KelimeEzberleme.Models;  // Eğer EmailSettings bu namespace içindeyse
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Geliştirme ortamı olarak ayarlandı
+// Geliştirme ortamı olarak   ayarlandı
 builder.Environment.EnvironmentName = "Development";
 
 // Veritabanı bağlantısı ayarlanıyor
